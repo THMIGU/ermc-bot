@@ -431,6 +431,7 @@ dependencies = [
  "anyhow",
  "poise",
  "reqwest 0.13.4",
+ "serde",
  "tokio",
  "toml",
 ]
