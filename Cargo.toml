@@ -4,3 +4,22 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+poise = "0.6.2"
+tokio = {
+	version = "1.53.1",
+	features = ["full"]
+}
+reqwest = {
+	version = "0.13.4",
+	features = ["json"]
+}
+anyhow = "1.0.104"
+toml = "1.1.4"
+
+[profile.release]
+debug = false
+strip = true
+lto = true
+codegen-units = 1
+panic = "abort"
+opt-level = "s"
