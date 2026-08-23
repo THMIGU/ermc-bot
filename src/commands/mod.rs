@@ -1,5 +1,6 @@
 mod ping;
 mod shutdown;
+mod signup;
 
 use crate::{
 	commands::{ping::ping, shutdown::shutdown},
