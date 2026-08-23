@@ -3,11 +3,11 @@ mod shutdown;
 mod signup;
 
 use crate::{
-	commands::{ping::ping, shutdown::shutdown},
+	commands::{ping::ping, shutdown::shutdown, signup::signup},
 	data::Data,
 	error::BotError,
 };
 
 pub fn commands() -> Vec<poise::Command<Data, BotError>> {
-	vec![ping(), shutdown()]
+	vec![ping(), shutdown(), signup()]
 }

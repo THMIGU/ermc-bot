@@ -1,10 +1,37 @@
 use anyhow::Context;
 use poise::{
 	CreateReply,
-	serenity_prelude::{CreateEmbed, colours::branding::WHITE},
+	serenity_prelude::{
+		ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, EmojiId, ReactionType,
+		colours::branding::WHITE,
+	},
 };
 
 use crate::{context::Ctx, error::BotResult};
+
+pub const CONFIRM_EMOJI: ReactionType = ReactionType::Custom {
+	name: None,
+	id: EmojiId::new(1540985370823630858),
+	animated: false,
+};
+pub const DENY_EMOJI: ReactionType = ReactionType::Custom {
+	name: None,
+	id: EmojiId::new(1540985410597953536),
+	animated: false,
+};
+
+pub fn confirmation_action_row() -> CreateActionRow {
+	let confirm_button = CreateButton::new("confirm")
+		.label("Confirm")
+		.emoji(CONFIRM_EMOJI)
+		.style(ButtonStyle::Success);
+	let deny_button = CreateButton::new("deny")
+		.label("Deny")
+		.emoji(DENY_EMOJI)
+		.style(ButtonStyle::Danger);
+
+	CreateActionRow::Buttons(vec![confirm_button, deny_button])
+}
 
 pub async fn error_embed(ctx: Ctx<'_>, message: &str) {
 	let embed = CreateEmbed::default()
