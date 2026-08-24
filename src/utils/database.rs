@@ -25,6 +25,23 @@ pub fn init_db() -> BotResult {
 	Ok(())
 }
 
+pub fn validate_player(discord_id: u64, ign: &str, uuid: &str) -> BotResult {
+	let mut db = get_connection()?;
+
+	let tx = db.transaction()?;
+
+	tx.execute(
+		"INSERT INTO players (discord_id, ign, uuid)
+		VALUES (?1, ?2, ?3)",
+		params![discord_id as i64, ign, uuid],
+	)
+	.context("Failed to add player to table")?;
+
+	tx.rollback()?;
+
+	Ok(())
+}
+
 pub fn add_player(discord_id: u64, ign: &str, uuid: &str) -> BotResult {
 	let db = get_connection()?;
 
@@ -34,6 +51,15 @@ pub fn add_player(discord_id: u64, ign: &str, uuid: &str) -> BotResult {
 		params![discord_id as i64, ign, uuid],
 	)
 	.context("Failed to add player to table")?;
+
+	Ok(())
+}
+
+pub fn remove_player(discord_id: u64) -> BotResult {
+	let db = get_connection()?;
+
+	db.execute("DELETE FROM players WHERE discord_id = ?1", params![discord_id as i64])
+		.context("Failed to remove player from table")?;
 
 	Ok(())
 }

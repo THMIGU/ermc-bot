@@ -3,7 +3,10 @@ use poise::{
 	CreateReply,
 	serenity_prelude::{
 		ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, EmojiId, ReactionType,
-		colours::branding::WHITE,
+		colours::{
+			branding::WHITE,
+			roles::{GREEN, RED},
+		},
 	},
 };
 
@@ -36,7 +39,7 @@ pub fn confirmation_action_row() -> CreateActionRow {
 pub async fn error_embed(ctx: Ctx<'_>, message: &str) {
 	let embed = CreateEmbed::default()
 		.title(format!(":x: {message}"))
-		.color(WHITE);
+		.color(RED);
 	let reply = CreateReply::default().embed(embed);
 
 	ctx.send(reply).await.ok();
@@ -45,7 +48,7 @@ pub async fn error_embed(ctx: Ctx<'_>, message: &str) {
 pub async fn success_embed(ctx: Ctx<'_>, message: &str) -> BotResult {
 	let embed = CreateEmbed::default()
 		.title(format!(":white_check_mark: {message}"))
-		.color(WHITE);
+		.color(GREEN);
 	let reply = CreateReply::default().embed(embed);
 
 	ctx.send(reply)
@@ -70,7 +73,7 @@ pub async fn ping_embed(ctx: Ctx<'_>) -> BotResult {
 
 pub async fn shutdown_embed(ctx: Ctx<'_>) -> BotResult {
 	let embed = CreateEmbed::default()
-		.title(":zzz: Shutting down!")
+		.title(":zzz: Shutting down")
 		.color(WHITE);
 	let reply = CreateReply::default().embed(embed);
 

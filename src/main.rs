@@ -1,5 +1,4 @@
 mod commands;
-mod config;
 mod context;
 mod data;
 mod error;
@@ -10,9 +9,9 @@ use poise::serenity_prelude as serenity;
 
 use crate::{
 	commands::commands,
-	config::Config,
 	data::Data,
 	error::{BotResult, on_error},
+	utils::{config::Config, database},
 };
 
 #[tokio::main]
@@ -34,6 +33,8 @@ async fn main() -> BotResult {
 					.await
 					.context("Failed to register commands")?;
 				println!("Logged in as {}", ready.user.tag());
+
+				database::init_db().context("Failed to initialize database")?;
 
 				Ok(Data::new(config))
 			})

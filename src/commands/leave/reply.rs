@@ -3,25 +3,18 @@ use poise::{
 	CreateReply,
 	serenity_prelude::{
 		ComponentInteraction, CreateEmbed, CreateInteractionResponse,
-		CreateInteractionResponseMessage, Message, colours::branding::WHITE,
+		CreateInteractionResponseMessage, Message,
+		colours::branding::{RED, WHITE},
 	},
 };
 
-use crate::{commands::signup::profile::Profile, context::Ctx, error::BotResult, utils::response};
+use crate::{context::Ctx, error::BotResult, utils::response};
 
-const SKIN_API: &str = "https://nmsr.nickac.dev/fullbodyiso";
-
-pub async fn send_confirmation(ctx: Ctx<'_>, profile: &Profile) -> BotResult<Message> {
-	let name = &profile.name;
-	let uuid = &profile.uuid;
-
-	let skin_url = format!("{}/{}", SKIN_API, uuid);
-
+pub async fn send_confirmation(ctx: Ctx<'_>) -> BotResult<Message> {
 	let embed = CreateEmbed::default()
-		.title("Is this you?")
-		.description(format!("**IGN:** {}\n**Discord:** {}", name, ctx.author().name))
-		.thumbnail(skin_url)
-		.color(WHITE);
+		.title("Leave?")
+		.description("Please confirm that you want to leave")
+		.color(RED);
 	let row = response::confirmation_action_row();
 
 	let reply = CreateReply::default()
@@ -31,7 +24,7 @@ pub async fn send_confirmation(ctx: Ctx<'_>, profile: &Profile) -> BotResult<Mes
 	let handle = ctx
 		.send(reply)
 		.await
-		.context("Failed to reply to signup")?;
+		.context("Failed to reply to leave")?;
 	let message = handle
 		.into_message()
 		.await
@@ -42,8 +35,8 @@ pub async fn send_confirmation(ctx: Ctx<'_>, profile: &Profile) -> BotResult<Mes
 
 pub async fn interaction_confirm(ctx: Ctx<'_>, interaction: ComponentInteraction) -> BotResult {
 	let embed = CreateEmbed::default()
-		.title("Request sent")
-		.description("Your request has been sent")
+		.title("Removal confirmed")
+		.description("You have been removed from the whitelist")
 		.color(WHITE);
 	let message = CreateInteractionResponseMessage::new()
 		.embed(embed)
@@ -61,8 +54,8 @@ pub async fn interaction_confirm(ctx: Ctx<'_>, interaction: ComponentInteraction
 
 pub async fn interaction_deny(ctx: Ctx<'_>, interaction: ComponentInteraction) -> BotResult {
 	let embed = CreateEmbed::default()
-		.title("Request cancelled")
-		.description("Your request has been cancelled")
+		.title("Removal cancelled")
+		.description("You were not removed from the whitelist")
 		.color(WHITE);
 	let message = CreateInteractionResponseMessage::new()
 		.embed(embed)

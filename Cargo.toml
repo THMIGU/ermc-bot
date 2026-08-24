@@ -19,7 +19,10 @@ reqwest = {
 }
 anyhow = "1.0.104"
 toml = "1.1.4"
-rusqlite = "0.40.2"
+rusqlite = {
+	version = "0.40.2",
+	features = ["bundled"]
+}
 
 [profile.release]
 debug = false

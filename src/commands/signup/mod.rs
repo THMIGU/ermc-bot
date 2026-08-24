@@ -2,11 +2,12 @@ mod profile;
 mod reply;
 
 use anyhow::Context;
+use poise::serenity_prelude::UserId;
 
 use crate::{
 	context::Ctx,
 	error::BotResult,
-	utils::{checks::is_essress, response},
+	utils::{checks::is_essress, database, response},
 };
 
 /// Sign up to be on the whitelist for ERMC.
@@ -25,21 +26,50 @@ pub async fn signup(ctx: Ctx<'_>, #[description = "Your Minecraft IGN."] ign: St
 		return Ok(());
 	};
 
+	match database::validate_player(ctx.author().id.get(), &profile.name, &profile.uuid) {
+		Ok(_) => (),
+		Err(_) => {
+			response::error_embed(
+				ctx,
+				"You have already signed up or someone has already signed up with that account",
+			)
+			.await;
+
+			return Ok(());
+		}
+	}
+
 	let message = reply::send_confirmation(ctx, &profile).await?;
-	if let Some(interaction) = message
+
+	let Some(interaction) = message
 		.await_component_interaction(ctx)
 		.await
+	else {
+		return Ok(());
+	};
+
+	match interaction
+		.data
+		.custom_id
+		.as_str()
 	{
-		match interaction
-			.data
-			.custom_id
-			.as_str()
-		{
-			"confirm" => reply::interaction_confirm(ctx, interaction).await?,
-			"deny" => reply::interaction_deny(ctx, interaction).await?,
-			_ => (),
-		};
-	}
+		"confirm" => reply::interaction_confirm(ctx, interaction).await?,
+		"deny" => {
+			reply::interaction_deny(ctx, interaction).await?;
+			return Ok(());
+		}
+		_ => return Ok(()),
+	};
+
+	let config = &ctx.data().config;
+
+	let owner_id = UserId::new(config.discord.owner_id);
+	let owner = owner_id
+		.to_user(ctx)
+		.await
+		.context("Failed to get user from owner ID")?;
+
+	
 
 	Ok(())
 }

@@ -1,6 +1,6 @@
 use reqwest::Client;
 
-use crate::config::Config;
+use crate::utils::config::Config;
 
 pub struct Data {
 	pub config: Config,
