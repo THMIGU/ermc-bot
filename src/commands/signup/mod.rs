@@ -2,7 +2,6 @@ mod profile;
 mod reply;
 
 use anyhow::Context;
-use poise::serenity_prelude::UserId;
 
 use crate::{
 	context::Ctx,
@@ -26,7 +25,9 @@ pub async fn signup(ctx: Ctx<'_>, #[description = "Your Minecraft IGN."] ign: St
 		return Ok(());
 	};
 
-	match database::validate_player(ctx.author().id.get(), &profile.name, &profile.uuid) {
+	let discord_id = ctx.author().id.get();
+
+	match database::validate_player(discord_id, &profile.name, &profile.uuid) {
 		Ok(_) => (),
 		Err(_) => {
 			response::error_embed(
@@ -53,23 +54,39 @@ pub async fn signup(ctx: Ctx<'_>, #[description = "Your Minecraft IGN."] ign: St
 		.custom_id
 		.as_str()
 	{
-		"confirm" => reply::interaction_confirm(ctx, interaction).await?,
+		"confirm" => reply::user_confirmed(ctx, interaction).await?,
 		"deny" => {
-			reply::interaction_deny(ctx, interaction).await?;
+			reply::user_denied(ctx, interaction).await?;
 			return Ok(());
 		}
 		_ => return Ok(()),
 	};
 
-	let config = &ctx.data().config;
+	let message = reply::send_request(ctx, &profile).await?;
 
-	let owner_id = UserId::new(config.discord.owner_id);
-	let owner = owner_id
-		.to_user(ctx)
+	let Some(interaction) = message
+		.await_component_interaction(ctx)
 		.await
-		.context("Failed to get user from owner ID")?;
+	else {
+		return Ok(());
+	};
 
-	
+	match interaction
+		.data
+		.custom_id
+		.as_str()
+	{
+		"confirm" => reply::owner_confirmed(ctx, interaction).await?,
+		"deny" => {
+			reply::owner_denied(ctx, interaction).await?;
+			reply::send_denied(ctx, discord_id).await?;
+			return Ok(());
+		}
+		_ => return Ok(()),
+	}
+
+	database::add_player(discord_id, &profile.name, &profile.uuid)?;
+	reply::send_confirmed(ctx, discord_id).await?;
 
 	Ok(())
 }

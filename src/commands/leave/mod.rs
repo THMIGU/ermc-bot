@@ -37,12 +37,12 @@ pub async fn leave(ctx: Ctx<'_>) -> BotResult {
 		.custom_id
 		.as_str()
 	{
-		"confirm" => reply::interaction_confirm(ctx, interaction).await?,
+		"confirm" => reply::user_confirmed(ctx, interaction).await?,
 		"deny" => {
-			reply::interaction_deny(ctx, interaction).await?;
+			reply::user_denied(ctx, interaction).await?;
 			return Ok(());
 		}
-		_ => (),
+		_ => return Ok(()),
 	};
 
 	database::remove_player(ctx.author().id.get())?;

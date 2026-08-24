@@ -33,7 +33,7 @@ pub async fn send_confirmation(ctx: Ctx<'_>) -> BotResult<Message> {
 	Ok(message)
 }
 
-pub async fn interaction_confirm(ctx: Ctx<'_>, interaction: ComponentInteraction) -> BotResult {
+pub async fn user_confirmed(ctx: Ctx<'_>, interaction: ComponentInteraction) -> BotResult {
 	let embed = CreateEmbed::default()
 		.title("Removal confirmed")
 		.description("You have been removed from the whitelist")
@@ -52,7 +52,7 @@ pub async fn interaction_confirm(ctx: Ctx<'_>, interaction: ComponentInteraction
 	Ok(())
 }
 
-pub async fn interaction_deny(ctx: Ctx<'_>, interaction: ComponentInteraction) -> BotResult {
+pub async fn user_denied(ctx: Ctx<'_>, interaction: ComponentInteraction) -> BotResult {
 	let embed = CreateEmbed::default()
 		.title("Removal cancelled")
 		.description("You were not removed from the whitelist")
