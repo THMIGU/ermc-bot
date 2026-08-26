@@ -24,5 +24,8 @@ pub async fn setup(
 
 	database::init_db().context("Failed to initialize database")?;
 
-	Ok(Data::new(config))
+	let data = Data::new(config)
+		.await
+		.context("Failed to initialize data")?;
+	Ok(data)
 }

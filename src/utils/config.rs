@@ -10,6 +10,7 @@ const CONFIG_PATH: &str = "config.toml";
 #[derive(Deserialize)]
 pub struct Config {
 	pub discord: DiscordConfig,
+	pub redis: RedisConfig,
 }
 
 #[derive(Deserialize)]
@@ -17,6 +18,12 @@ pub struct DiscordConfig {
 	pub token: String,
 	pub owner_id: u64,
 	pub essress_id: u64,
+}
+
+#[derive(Deserialize)]
+pub struct RedisConfig {
+	pub ip: String,
+	pub port: u32,
 }
 
 impl Config {

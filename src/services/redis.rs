@@ -1,11 +1,10 @@
 use anyhow::Context;
-use futures_util::StreamExt;
-use redis::{AsyncTypedCommands, Client};
+use redis::{AsyncTypedCommands, aio::PubSub};
 
-use crate::error::BotResult;
+use crate::{context::Ctx, error::BotResult};
 
-pub async fn redis_sub() -> BotResult {
-	let client = Client::open("redis://10.0.0.144:52003/")?;
+pub async fn redis_sub(ctx: Ctx<'_>, channel: &str) -> BotResult<PubSub> {
+	let client = &ctx.data().redis_client;
 
 	let mut pubsub = client
 		.get_async_pubsub()
@@ -15,50 +14,23 @@ pub async fn redis_sub() -> BotResult {
 	println!("Connected to Redis");
 
 	pubsub
-		.subscribe("cm:broadcast")
+		.subscribe(channel)
 		.await
 		.context("Failed to subscribe to channel")?;
 
-	let mut stream = pubsub.on_message();
-	while let Some(msg) = stream.next().await {
-		let payload: String = msg
-			.get_payload()
-			.context("Failed to get payload")?;
-
-		println!("{payload}");
-	}
-
-	Ok(())
+	Ok(pubsub)
 }
 
-pub async fn redis_pub() -> BotResult {
-	let client = Client::open("redis://10.0.0.144:52003/")?;
+pub async fn redis_pub(ctx: Ctx<'_>, channel: &str, message: &str) -> BotResult {
+	let mut manager = ctx
+		.data()
+		.redis_manager
+		.clone();
 
-	let mut con = client
-		.get_multiplexed_async_connection()
+	manager
+		.publish(channel, message)
 		.await
-		.context("Failed to get async con")?;
-
-	println!("Connected to Redis");
-
-	let _ = con
-		.publish("cm:broadcast", "/")
-		.await?;
+		.context("Failed to publish message")?;
 
 	Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	#[tokio::test]
-	async fn test_redis_sub() {
-		redis_sub().await.unwrap();
-	}
-
-	#[tokio::test]
-	async fn test_redis_pub() {
-		redis_pub().await.unwrap();
-	}
 }
