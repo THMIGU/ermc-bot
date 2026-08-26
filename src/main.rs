@@ -3,6 +3,7 @@ mod context;
 mod data;
 mod error;
 mod services;
+mod setup;
 mod utils;
 
 use anyhow::Context;
@@ -10,36 +11,26 @@ use poise::serenity_prelude as serenity;
 
 use crate::{
 	commands::commands,
-	data::Data,
 	error::{BotResult, on_error},
-	utils::{config::Config, database},
+	utils::config::Config,
 };
 
 #[tokio::main]
 async fn main() -> BotResult {
 	let config: Config = Config::load().context("Failed to load config")?;
+	let token = config.discord.token;
 
-	let token = config.discord.token.clone();
 	let intents = serenity::GatewayIntents::all();
 
+	let framework_options = poise::FrameworkOptions {
+		commands: commands(),
+		on_error: |err| Box::pin(on_error(err)),
+		..Default::default()
+	};
+
 	let framework = poise::Framework::builder()
-		.options(poise::FrameworkOptions {
-			commands: commands(),
-			on_error: |err| Box::pin(on_error(err)),
-			..Default::default()
-		})
-		.setup(|ctx, ready, framework| {
-			Box::pin(async move {
-				poise::builtins::register_globally(ctx, &framework.options().commands)
-					.await
-					.context("Failed to register commands")?;
-				println!("Logged in as {}", ready.user.tag());
-
-				database::init_db().context("Failed to initialize database")?;
-
-				Ok(Data::new(config))
-			})
-		})
+		.options(framework_options)
+		.setup(|ctx, ready, framework| Box::pin(setup::setup(ctx, ready, framework)))
 		.build();
 
 	let mut client = serenity::ClientBuilder::new(&token, intents)
