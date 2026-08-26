@@ -19,6 +19,11 @@ reqwest = {
 }
 anyhow = "1.0.104"
 toml = "1.1.4"
+redis = {
+	version = "1.6.0",
+	features = ["tokio-comp"]
+}
+futures-util = "0.3.34"
 rusqlite = {
 	version = "0.40.2",
 	features = ["bundled"]

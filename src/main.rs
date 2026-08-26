@@ -2,6 +2,7 @@ mod commands;
 mod context;
 mod data;
 mod error;
+mod services;
 mod utils;
 
 use anyhow::Context;
