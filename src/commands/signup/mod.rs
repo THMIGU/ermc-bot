@@ -6,6 +6,7 @@ use anyhow::Context;
 use crate::{
 	context::Ctx,
 	error::BotResult,
+	services::redis,
 	utils::{checks::is_essress, database, response},
 };
 
@@ -94,6 +95,7 @@ pub async fn signup(ctx: Ctx<'_>, #[description = "Your Minecraft IGN."] ign: St
 
 	reply::send_confirmed(ctx, discord_id).await?;
 	database::add_player(discord_id, &profile.name, &profile.uuid)?;
+	redis::redis_pub(ctx.data().clone(), "ermc:whitelist:update", &profile.uuid).await?;
 
 	Ok(())
 }
