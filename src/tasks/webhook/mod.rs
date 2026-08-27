@@ -9,9 +9,7 @@ use futures_util::StreamExt;
 use crate::{data::Data, error::BotResult, services::redis};
 
 pub async fn receive_webhook(data: Arc<Data>) -> BotResult {
-	let mut sub = redis::redis_psub(data.clone(), "ermc:webhook").await?;
-
-	println!("Webhook recv subscribed");
+	let mut sub = redis::redis_psub(data.clone(), "ermc:webhook:*").await?;
 
 	let mut stream = sub.on_message();
 
@@ -20,10 +18,8 @@ pub async fn receive_webhook(data: Arc<Data>) -> BotResult {
 			.get_payload()
 			.context("Failed to get payload")?;
 
-		println!("RECEIVED: {}", payload);
-
 		let channel = msg.get_channel_name();
-		let prefix = "ermc:webhook";
+		let prefix = "ermc:webhook:";
 
 		let subchannel = channel
 			.strip_prefix(prefix)
