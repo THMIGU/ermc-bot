@@ -18,6 +18,7 @@ pub struct DiscordConfig {
 	pub token: String,
 	pub owner_id: u64,
 	pub essress_id: u64,
+	pub webhook_url: String,
 }
 
 #[derive(Deserialize)]

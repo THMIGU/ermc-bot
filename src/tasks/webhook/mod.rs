@@ -1,19 +1,26 @@
 mod chat;
 mod send;
 
+use std::sync::Arc;
+
 use anyhow::Context;
 use futures_util::StreamExt;
 
-use crate::{context::Ctx, error::BotResult, services::redis};
+use crate::{data::Data, error::BotResult, services::redis};
 
-pub async fn receive_webhook(ctx: Ctx<'_>) -> BotResult {
-	let mut sub = redis::redis_psub(ctx, "ermc:webhook").await?;
+pub async fn receive_webhook(data: Arc<Data>) -> BotResult {
+	let mut sub = redis::redis_psub(data.clone(), "ermc:webhook").await?;
+
+	println!("Webhook recv subscribed");
+
 	let mut stream = sub.on_message();
 
 	while let Some(msg) = stream.next().await {
 		let payload: String = msg
 			.get_payload()
 			.context("Failed to get payload")?;
+
+		println!("RECEIVED: {}", payload);
 
 		let channel = msg.get_channel_name();
 		let prefix = "ermc:webhook";
@@ -23,7 +30,7 @@ pub async fn receive_webhook(ctx: Ctx<'_>) -> BotResult {
 			.unwrap();
 
 		match subchannel {
-			"chat" => chat::chat_webhook(ctx, &payload).await?,
+			"chat" => chat::chat_webhook(data.clone(), &payload).await?,
 			"sleep" => (),
 			"death" => (),
 			"adv" => (),

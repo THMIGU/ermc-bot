@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use anyhow::Context;
 use poise::{
 	Framework,
@@ -7,14 +9,15 @@ use poise::{
 use crate::{
 	data::Data,
 	error::{BotError, BotResult},
+	tasks,
 	utils::{config::Config, database},
 };
 
 pub async fn setup(
 	ctx: &SerenityContext,
 	ready: &Ready,
-	framework: &Framework<Data, BotError>,
-) -> BotResult<Data> {
+	framework: &Framework<Arc<Data>, BotError>,
+) -> BotResult<Arc<Data>> {
 	let config: Config = Config::load().context("Failed to load config")?;
 
 	poise::builtins::register_globally(ctx, &framework.options().commands)
@@ -24,8 +27,13 @@ pub async fn setup(
 
 	database::init_db().context("Failed to initialize database")?;
 
-	let data = Data::new(config)
-		.await
-		.context("Failed to initialize data")?;
+	let data = Arc::new(
+		Data::new(config)
+			.await
+			.context("Failed to initialize data")?,
+	);
+
+	tokio::spawn(tasks::webhook::receive_webhook(data.clone()));
+
 	Ok(data)
 }

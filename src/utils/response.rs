@@ -45,7 +45,7 @@ pub async fn error_embed(ctx: Ctx<'_>, message: &str) {
 	ctx.send(reply).await.ok();
 }
 
-pub async fn success_embed(ctx: Ctx<'_>, message: &str) -> BotResult {
+pub async fn _success_embed(ctx: Ctx<'_>, message: &str) -> BotResult {
 	let embed = CreateEmbed::default()
 		.title(format!(":white_check_mark: {message}"))
 		.color(GREEN);

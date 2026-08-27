@@ -1,17 +1,17 @@
+use std::sync::Arc;
+
 use anyhow::Context;
 use redis::{AsyncTypedCommands, aio::PubSub};
 
-use crate::{context::Ctx, error::BotResult};
+use crate::{data::Data, error::BotResult};
 
-pub async fn redis_sub(ctx: Ctx<'_>, channel: &str) -> BotResult<PubSub> {
-	let client = &ctx.data().redis_client;
+pub async fn _redis_sub(data: Arc<Data>, channel: &str) -> BotResult<PubSub> {
+	let client = &data.redis_client;
 
 	let mut pubsub = client
 		.get_async_pubsub()
 		.await
 		.context("Failed to get async pubsub")?;
-
-	println!("Connected to Redis");
 
 	pubsub
 		.subscribe(channel)
@@ -21,15 +21,13 @@ pub async fn redis_sub(ctx: Ctx<'_>, channel: &str) -> BotResult<PubSub> {
 	Ok(pubsub)
 }
 
-pub async fn redis_psub(ctx: Ctx<'_>, pattern: &str) -> BotResult<PubSub> {
-	let client = &ctx.data().redis_client;
+pub async fn redis_psub(data: Arc<Data>, pattern: &str) -> BotResult<PubSub> {
+	let client = &data.redis_client;
 
 	let mut pubsub = client
 		.get_async_pubsub()
 		.await
 		.context("Failed to get async pubsub")?;
-
-	println!("Connected to Redis");
 
 	pubsub
 		.psubscribe(pattern)
@@ -39,16 +37,42 @@ pub async fn redis_psub(ctx: Ctx<'_>, pattern: &str) -> BotResult<PubSub> {
 	Ok(pubsub)
 }
 
-pub async fn redis_pub(ctx: Ctx<'_>, channel: &str, message: &str) -> BotResult {
-	let mut manager = ctx
-		.data()
-		.redis_manager
-		.clone();
+pub async fn redis_pub(data: Arc<Data>, channel: &str, message: &str) -> BotResult<usize> {
+	let mut manager = data.redis_manager.clone();
 
-	manager
+	let subscribers = manager
 		.publish(channel, message)
 		.await
 		.context("Failed to publish message")?;
 
-	Ok(())
+	Ok(subscribers)
+}
+
+#[cfg(test)]
+mod test {
+	use crate::utils::config::Config;
+
+	use super::*;
+
+	#[tokio::test]
+	async fn test_redis() {
+		let config = Config::load().unwrap();
+		let data = Arc::new(
+			Data::new(config)
+				.await
+				.unwrap(),
+		);
+
+		let message = "{
+			\"ign\": \"THMIGU\",
+			\"uuid\": \"fd7f416a-04f9-4849-851b-c4c4cfbe1ac1\",
+			\"msg\": \"test\"
+		}";
+
+		let subscribers = redis_pub(data, "ermc:webhook:chat", message)
+			.await
+			.unwrap();
+
+		println!("Sent message to {} subscribers", subscribers)
+	}
 }

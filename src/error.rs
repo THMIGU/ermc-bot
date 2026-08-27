@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use anyhow::Error;
 use poise::FrameworkError;
 
@@ -6,7 +8,7 @@ use crate::{data::Data, utils::response};
 pub type BotError = Error;
 pub type BotResult<T = ()> = Result<T, BotError>;
 
-pub async fn on_error(error: FrameworkError<'_, Data, BotError>) {
+pub async fn on_error(error: FrameworkError<'_, Arc<Data>, BotError>) {
 	match error {
 		FrameworkError::Command {
 			error,
