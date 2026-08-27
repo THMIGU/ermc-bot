@@ -1,5 +1,8 @@
+mod advancement;
 mod chat;
+mod death;
 mod send;
+mod sleep;
 
 use std::sync::Arc;
 
@@ -27,9 +30,9 @@ pub async fn receive_webhook(data: Arc<Data>) -> BotResult {
 
 		match subchannel {
 			"chat" => chat::chat_webhook(data.clone(), &payload).await?,
-			"sleep" => (),
-			"death" => (),
-			"adv" => (),
+			"sleep" => sleep::sleep_webhook(data.clone(), &payload).await?,
+			"death" => death::death_webhook(data.clone(), &payload).await?,
+			"adv" => advancement::adv_webhook(data.clone(), &payload).await?,
 			_ => continue,
 		};
 	}
