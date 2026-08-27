@@ -9,10 +9,10 @@ use std::sync::Arc;
 use anyhow::Context;
 use futures_util::StreamExt;
 
-use crate::{data::Data, error::BotResult, services::redis};
+use crate::{context::TaskCtx, error::BotResult, services::redis};
 
-pub async fn receive_webhook(data: Arc<Data>) -> BotResult {
-	let mut sub = redis::redis_psub(data.clone(), "ermc:webhook:*").await?;
+pub async fn receive_webhook(ctx: Arc<TaskCtx>) -> BotResult {
+	let mut sub = redis::redis_psub(ctx.data.clone(), "ermc:webhook:*").await?;
 
 	let mut stream = sub.on_message();
 
@@ -29,10 +29,10 @@ pub async fn receive_webhook(data: Arc<Data>) -> BotResult {
 			.unwrap();
 
 		match subchannel {
-			"chat" => chat::chat_webhook(data.clone(), &payload).await?,
-			"sleep" => sleep::sleep_webhook(data.clone(), &payload).await?,
-			"death" => death::death_webhook(data.clone(), &payload).await?,
-			"adv" => advancement::adv_webhook(data.clone(), &payload).await?,
+			"chat" => chat::chat_webhook(ctx.clone(), &payload).await?,
+			"sleep" => sleep::sleep_webhook(ctx.clone(), &payload).await?,
+			"death" => death::death_webhook(ctx.clone(), &payload).await?,
+			"adv" => advancement::adv_webhook(ctx.clone(), &payload).await?,
 			_ => continue,
 		};
 	}

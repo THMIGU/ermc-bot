@@ -7,6 +7,7 @@ use poise::{
 };
 
 use crate::{
+	context::TaskCtx,
 	data::Data,
 	error::{BotError, BotResult},
 	tasks,
@@ -33,7 +34,12 @@ pub async fn setup(
 			.context("Failed to initialize data")?,
 	);
 
-	tokio::spawn(tasks::webhook::receive_webhook(data.clone()));
+	let task_ctx = Arc::new(TaskCtx {
+		data: data.clone(),
+		http: ctx.http.clone(),
+	});
+
+	tokio::spawn(tasks::webhook::receive_webhook(task_ctx));
 
 	Ok(data)
 }

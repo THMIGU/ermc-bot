@@ -3,7 +3,7 @@ use std::sync::Arc;
 use serde::Deserialize;
 
 use crate::{
-	data::Data,
+	context::TaskCtx,
 	error::BotResult,
 	tasks::webhook::send::{self, Payload},
 };
@@ -26,13 +26,13 @@ impl From<Chat> for Payload {
 	}
 }
 
-pub async fn chat_webhook(data: Arc<Data>, payload: &str) -> BotResult {
+pub async fn chat_webhook(ctx: Arc<TaskCtx>, payload: &str) -> BotResult {
 	let Ok(chat) = serde_json::from_str::<Chat>(payload) else {
 		return Ok(());
 	};
 	let webhook = Payload::from(chat);
 
-	send::send_webhook(data, &webhook).await?;
+	send::send_webhook(ctx.data.clone(), &webhook).await?;
 
 	Ok(())
 }

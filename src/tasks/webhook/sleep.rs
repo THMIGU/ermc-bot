@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
+use poise::serenity_prelude::colours::branding::WHITE;
 use serde::Deserialize;
 
 use crate::{
-	data::Data,
+	context::TaskCtx,
 	error::BotResult,
 	tasks::webhook::send::{self, Embed, Payload},
 };
@@ -18,7 +19,7 @@ impl From<Sleep> for Payload {
 	fn from(sleep: Sleep) -> Self {
 		let embed = Embed {
 			title: format!("🌙 {} is sleeping", sleep.ign),
-			color: 0xFFFFFF,
+			color: WHITE.0,
 		};
 
 		Self {
@@ -30,13 +31,13 @@ impl From<Sleep> for Payload {
 	}
 }
 
-pub async fn sleep_webhook(data: Arc<Data>, payload: &str) -> BotResult {
+pub async fn sleep_webhook(ctx: Arc<TaskCtx>, payload: &str) -> BotResult {
 	let Ok(sleep) = serde_json::from_str::<Sleep>(payload) else {
 		return Ok(());
 	};
 	let webhook = Payload::from(sleep);
 
-	send::send_webhook(data, &webhook).await?;
+	send::send_webhook(ctx.data.clone(), &webhook).await?;
 
 	Ok(())
 }

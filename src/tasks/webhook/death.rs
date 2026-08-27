@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
+use poise::serenity_prelude::colours::branding::WHITE;
 use serde::Deserialize;
 
 use crate::{
-	data::Data,
+	context::TaskCtx,
 	error::BotResult,
 	tasks::webhook::send::{self, Embed, Payload},
 };
@@ -19,7 +20,7 @@ impl From<Death> for Payload {
 	fn from(death: Death) -> Self {
 		let embed = Embed {
 			title: format!("💀 {}", death.msg),
-			color: 0xFFFFFF,
+			color: WHITE.0,
 		};
 
 		Self {
@@ -31,13 +32,13 @@ impl From<Death> for Payload {
 	}
 }
 
-pub async fn death_webhook(data: Arc<Data>, payload: &str) -> BotResult {
+pub async fn death_webhook(ctx: Arc<TaskCtx>, payload: &str) -> BotResult {
 	let Ok(death) = serde_json::from_str::<Death>(payload) else {
 		return Ok(());
 	};
 	let webhook = Payload::from(death);
 
-	send::send_webhook(data, &webhook).await?;
+	send::send_webhook(ctx.data.clone(), &webhook).await?;
 
 	Ok(())
 }
