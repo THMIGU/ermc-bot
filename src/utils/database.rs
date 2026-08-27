@@ -20,14 +20,17 @@ pub fn init_db() -> BotResult {
 		)",
 		[],
 	)
-	.context("Failed to create player table")?;
+	.context("Failed to create players table")?;
 	db.execute(
 		"CREATE TABLE IF NOT EXISTS requests (
 			discord_id INTEGER PRIMARY KEY
 		)",
 		[],
 	)
-	.context("Failed to create player table")?;
+	.context("Failed to create requests table")?;
+
+	db.execute("DELETE FROM requests", [])
+		.context("Failed to clear requests")?;
 
 	Ok(())
 }
@@ -62,11 +65,33 @@ pub fn add_player(discord_id: u64, ign: &str, uuid: &str) -> BotResult {
 	Ok(())
 }
 
+pub fn add_request(discord_id: u64) -> BotResult {
+	let db = get_connection()?;
+
+	db.execute(
+		"INSERT INTO requests (discord_id)
+		VALUES (?1)",
+		params![discord_id as i64],
+	)
+	.context("Failed to add request to table")?;
+
+	Ok(())
+}
+
 pub fn remove_player(discord_id: u64) -> BotResult {
 	let db = get_connection()?;
 
 	db.execute("DELETE FROM players WHERE discord_id = ?1", params![discord_id as i64])
 		.context("Failed to remove player from table")?;
+
+	Ok(())
+}
+
+pub fn remove_request(discord_id: u64) -> BotResult {
+	let db = get_connection()?;
+
+	db.execute("DELETE FROM requests WHERE discord_id = ?1", params![discord_id as i64])
+		.context("Failed to remove request from table")?;
 
 	Ok(())
 }
@@ -91,4 +116,18 @@ pub fn get_player(discord_id: u64) -> BotResult<Option<(String, String)>> {
 		.context("Failed to get ID in table")?;
 
 	Ok(player)
+}
+
+pub fn check_requests(discord_id: u64) -> BotResult<bool> {
+	let db = get_connection()?;
+
+	let exists: bool = db
+		.query_row(
+			"SELECT EXISTS(SELECT 1 FROM requests WHERE discord_id = ?1)",
+			params![discord_id as i64],
+			|row| row.get(0),
+		)
+		.context("Failed to check for request")?;
+
+	Ok(exists)
 }

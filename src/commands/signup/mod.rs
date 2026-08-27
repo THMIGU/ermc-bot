@@ -16,6 +16,12 @@ pub async fn signup(ctx: Ctx<'_>, #[description = "Your Minecraft IGN."] ign: St
 		.await
 		.context("Failed to defer response")?;
 
+	let discord_id = ctx.author().id.get();
+	if database::check_requests(discord_id)? {
+		response::error_embed(ctx, "You have already sent a request").await;
+		return Ok(());
+	}
+
 	let profile = profile::get_profile(&ctx.data().http_client, &ign)
 		.await
 		.context("Failed to get profile")?;
@@ -24,8 +30,6 @@ pub async fn signup(ctx: Ctx<'_>, #[description = "Your Minecraft IGN."] ign: St
 		response::error_embed(ctx, &format!("Could not find account named \"{}\"", ign)).await;
 		return Ok(());
 	};
-
-	let discord_id = ctx.author().id.get();
 
 	match database::validate_player(discord_id, &profile.name, &profile.uuid) {
 		Ok(_) => (),
@@ -63,6 +67,7 @@ pub async fn signup(ctx: Ctx<'_>, #[description = "Your Minecraft IGN."] ign: St
 	};
 
 	let message = reply::send_request(ctx, &profile).await?;
+	database::add_request(discord_id)?;
 
 	let Some(interaction) = message
 		.await_component_interaction(ctx)
@@ -70,6 +75,8 @@ pub async fn signup(ctx: Ctx<'_>, #[description = "Your Minecraft IGN."] ign: St
 	else {
 		return Ok(());
 	};
+
+	database::remove_request(discord_id)?;
 
 	match interaction
 		.data
@@ -85,8 +92,8 @@ pub async fn signup(ctx: Ctx<'_>, #[description = "Your Minecraft IGN."] ign: St
 		_ => return Ok(()),
 	}
 
-	database::add_player(discord_id, &profile.name, &profile.uuid)?;
 	reply::send_confirmed(ctx, discord_id).await?;
+	database::add_player(discord_id, &profile.name, &profile.uuid)?;
 
 	Ok(())
 }

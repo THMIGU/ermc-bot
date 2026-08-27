@@ -28,7 +28,7 @@ pub async fn on_error(error: FrameworkError<'_, Arc<Data>, BotError>) {
 				eprintln!("{:#}", error);
 			}
 
-			response::error_embed(ctx, "You cannot use this command!").await;
+			response::error_embed(ctx, "You cannot use this command (here)!").await;
 		}
 		other => {
 			eprintln!("{:#}", other);
