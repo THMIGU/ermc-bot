@@ -21,6 +21,13 @@ pub fn init_db() -> BotResult {
 		[],
 	)
 	.context("Failed to create player table")?;
+	db.execute(
+		"CREATE TABLE IF NOT EXISTS requests (
+			discord_id INTEGER PRIMARY KEY
+		)",
+		[],
+	)
+	.context("Failed to create player table")?;
 
 	Ok(())
 }
