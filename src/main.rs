@@ -4,6 +4,7 @@ mod data;
 mod error;
 mod services;
 mod setup;
+mod tasks;
 mod utils;
 
 use anyhow::Context;

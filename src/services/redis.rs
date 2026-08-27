@@ -21,6 +21,24 @@ pub async fn redis_sub(ctx: Ctx<'_>, channel: &str) -> BotResult<PubSub> {
 	Ok(pubsub)
 }
 
+pub async fn redis_psub(ctx: Ctx<'_>, pattern: &str) -> BotResult<PubSub> {
+	let client = &ctx.data().redis_client;
+
+	let mut pubsub = client
+		.get_async_pubsub()
+		.await
+		.context("Failed to get async pubsub")?;
+
+	println!("Connected to Redis");
+
+	pubsub
+		.psubscribe(pattern)
+		.await
+		.context("Failed to subscribe to channel")?;
+
+	Ok(pubsub)
+}
+
 pub async fn redis_pub(ctx: Ctx<'_>, channel: &str, message: &str) -> BotResult {
 	let mut manager = ctx
 		.data()
