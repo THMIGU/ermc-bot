@@ -2,6 +2,7 @@ mod commands;
 mod context;
 mod data;
 mod error;
+mod events;
 mod services;
 mod setup;
 mod tasks;
@@ -13,6 +14,7 @@ use poise::serenity_prelude as serenity;
 use crate::{
 	commands::commands,
 	error::{BotResult, on_error},
+	events::event_handler,
 	utils::config::Config,
 };
 
@@ -25,6 +27,7 @@ async fn main() -> BotResult {
 
 	let framework_options = poise::FrameworkOptions {
 		commands: commands(),
+		event_handler: |ctx, event, _framework, data| Box::pin(event_handler(ctx, event, data)),
 		on_error: |err| Box::pin(on_error(err)),
 		..Default::default()
 	};
