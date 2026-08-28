@@ -1,13 +1,9 @@
 use std::sync::Arc;
 
-use poise::serenity_prelude::colours::branding::WHITE;
+use poise::serenity_prelude::{CreateEmbed, ExecuteWebhook, colours::branding::WHITE};
 use serde::Deserialize;
 
-use crate::{
-	context::TaskCtx,
-	error::BotResult,
-	tasks::webhook::send::{self, Embed, Payload},
-};
+use crate::{context::TaskCtx, error::BotResult, tasks::webhook::send};
 
 #[derive(Deserialize)]
 struct Death {
@@ -16,29 +12,24 @@ struct Death {
 	msg: String,
 }
 
-impl From<Death> for Payload {
-	fn from(death: Death) -> Self {
-		let embed = Embed {
-			title: format!("💀 {}", death.msg),
-			color: WHITE.0,
-		};
-
-		Self {
-			username: death.ign,
-			avatar_url: format!("https://visage.surgeplay.com/head/512/{}", death.uuid),
-			content: None,
-			embeds: Some(vec![embed]),
-		}
-	}
-}
-
 pub async fn death_webhook(ctx: Arc<TaskCtx>, payload: &str) -> BotResult {
 	let Ok(death) = serde_json::from_str::<Death>(payload) else {
 		return Ok(());
 	};
-	let webhook = Payload::from(death);
 
-	send::send_webhook(ctx.data.clone(), &webhook).await?;
+	let avatar_url = format!("https://visage.surgeplay.com/head/512/{}", death.uuid);
+	let title = format!("💀 {}", death.msg);
+
+	let embed = CreateEmbed::new()
+		.title(title)
+		.color(WHITE);
+
+	let builder = ExecuteWebhook::new()
+		.username(death.ign)
+		.avatar_url(avatar_url)
+		.embed(embed);
+
+	send::send_webhook(ctx, builder).await?;
 
 	Ok(())
 }

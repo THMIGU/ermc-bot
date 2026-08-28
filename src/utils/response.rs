@@ -38,7 +38,7 @@ pub fn confirmation_action_row() -> CreateActionRow {
 
 pub async fn error_embed(ctx: Ctx<'_>, message: &str) {
 	let embed = CreateEmbed::default()
-		.title(format!(":x: {message}"))
+		.title(format!("<:deny:1540985410597953536> {message}"))
 		.color(RED);
 	let reply = CreateReply::default().embed(embed);
 
@@ -47,7 +47,7 @@ pub async fn error_embed(ctx: Ctx<'_>, message: &str) {
 
 pub async fn _success_embed(ctx: Ctx<'_>, message: &str) -> BotResult {
 	let embed = CreateEmbed::default()
-		.title(format!(":white_check_mark: {message}"))
+		.title(format!("<:confirm:1540985370823630858> {message}"))
 		.color(GREEN);
 	let reply = CreateReply::default().embed(embed);
 
@@ -60,7 +60,7 @@ pub async fn _success_embed(ctx: Ctx<'_>, message: &str) -> BotResult {
 
 pub async fn ping_embed(ctx: Ctx<'_>) -> BotResult {
 	let embed = CreateEmbed::default()
-		.title(":ping_pong: Pong!")
+		.title("🏓 Pong!")
 		.color(WHITE);
 	let reply = CreateReply::default().embed(embed);
 
@@ -73,7 +73,7 @@ pub async fn ping_embed(ctx: Ctx<'_>) -> BotResult {
 
 pub async fn shutdown_embed(ctx: Ctx<'_>) -> BotResult {
 	let embed = CreateEmbed::default()
-		.title(":zzz: Shutting down")
+		.title("💤 Shutting down")
 		.color(WHITE);
 	let reply = CreateReply::default().embed(embed);
 
