@@ -3,7 +3,8 @@ use poise::{
 	CreateReply,
 	serenity_prelude::{
 		ComponentInteraction, CreateEmbed, CreateInteractionResponse,
-		CreateInteractionResponseMessage, CreateMessage, Message, UserId, colours::branding::WHITE,
+		CreateInteractionResponseMessage, CreateMessage, Mentionable, Message, UserId,
+		colours::branding::WHITE,
 	},
 };
 
@@ -19,7 +20,7 @@ pub async fn send_confirmation(ctx: Ctx<'_>, profile: &Profile) -> BotResult<Mes
 
 	let embed = CreateEmbed::default()
 		.title("Is this you?")
-		.description(format!("**IGN:** {}\n**Discord:** {}", name, ctx.author().name))
+		.description(format!("**IGN:** {}\n**Discord:** {}", name, ctx.author().mention()))
 		.thumbnail(skin_url)
 		.color(WHITE);
 	let row = response::confirmation_action_row();
@@ -94,7 +95,7 @@ pub async fn send_request(ctx: Ctx<'_>, profile: &Profile) -> BotResult<Message>
 
 	let embed = CreateEmbed::default()
 		.title("Whitelist Request")
-		.description(format!("**IGN:** {}\n**Discord:** {}", name, ctx.author().name))
+		.description(format!("**IGN:** {}\n**Discord:** {}", name, ctx.author().mention()))
 		.thumbnail(skin_url)
 		.color(WHITE);
 	let row = response::confirmation_action_row();

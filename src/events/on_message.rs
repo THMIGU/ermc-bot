@@ -18,8 +18,6 @@ pub async fn on_message(_ctx: &Ctx, data: &Arc<Data>, message: &Message) -> BotR
 		return Ok(());
 	}
 
-	println!("Sending message to Redis");
-
 	let author = &message.author;
 
 	let id = author.id.get();
