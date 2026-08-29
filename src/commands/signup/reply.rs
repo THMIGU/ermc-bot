@@ -2,8 +2,8 @@ use anyhow::Context;
 use poise::{
 	CreateReply,
 	serenity_prelude::{
-		ComponentInteraction, CreateEmbed, CreateInteractionResponse,
-		CreateInteractionResponseMessage, CreateMessage, Mentionable, Message, UserId,
+		ComponentInteraction, CreateEmbed, CreateEmbedAuthor, CreateInteractionResponse,
+		CreateInteractionResponseMessage, CreateMessage, EmbedAuthor, Mentionable, Message, UserId,
 		colours::branding::WHITE,
 	},
 };
@@ -18,7 +18,13 @@ pub async fn send_confirmation(ctx: Ctx<'_>, profile: &Profile) -> BotResult<Mes
 
 	let skin_url = format!("{}/{}", SKIN_API, uuid);
 
+	let mut author = CreateEmbedAuthor::new(&ctx.author().name);
+	if let Some(url) = ctx.author().avatar_url() {
+		author = author.icon_url(url);
+	}
+
 	let embed = CreateEmbed::default()
+		.author(author)
 		.title("Is this you?")
 		.description(format!("**IGN:** {}\n**Discord:** {}", name, ctx.author().mention()))
 		.thumbnail(skin_url)
@@ -93,7 +99,13 @@ pub async fn send_request(ctx: Ctx<'_>, profile: &Profile) -> BotResult<Message>
 
 	let skin_url = format!("{}/{}", SKIN_API, uuid);
 
+	let mut author = CreateEmbedAuthor::new(&ctx.author().name);
+	if let Some(url) = ctx.author().avatar_url() {
+		author = author.icon_url(url);
+	}
+
 	let embed = CreateEmbed::default()
+		.author(author)
 		.title("Whitelist Request")
 		.description(format!("**IGN:** {}\n**Discord:** {}", name, ctx.author().mention()))
 		.thumbnail(skin_url)
@@ -113,7 +125,13 @@ pub async fn send_request(ctx: Ctx<'_>, profile: &Profile) -> BotResult<Message>
 }
 
 pub async fn owner_confirmed(ctx: Ctx<'_>, interaction: ComponentInteraction) -> BotResult {
+	let mut author = CreateEmbedAuthor::new(&ctx.author().name);
+	if let Some(url) = ctx.author().avatar_url() {
+		author = author.icon_url(url);
+	}
+
 	let embed = CreateEmbed::default()
+		.author(author)
 		.title("Request confirmed")
 		.description("This request has been confirmed")
 		.color(WHITE);
@@ -132,7 +150,13 @@ pub async fn owner_confirmed(ctx: Ctx<'_>, interaction: ComponentInteraction) ->
 }
 
 pub async fn owner_denied(ctx: Ctx<'_>, interaction: ComponentInteraction) -> BotResult {
+	let mut author = CreateEmbedAuthor::new(&ctx.author().name);
+	if let Some(url) = ctx.author().avatar_url() {
+		author = author.icon_url(url);
+	}
+
 	let embed = CreateEmbed::default()
+		.author(author)
 		.title("Request denied")
 		.description("This request has been denied")
 		.color(WHITE);
